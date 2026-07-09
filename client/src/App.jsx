@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
+  const [searchTerm , setSearchTerm ] = useState('');
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,17 +18,30 @@ function App() {
       .catch((err) => {
         setError('Failed to load movies')
         setLoading(false)
+        console.log(err);
       })
   }, [])
 
   if (loading) return <div className="app"><h1>StreamHub 🎬</h1><p>Loading movies...</p></div>
   if (error) return <div className="app"><h1>StreamHub 🎬</h1><p>{error}</p></div>
 
+  const filteredMovies = movies.filter((movie) =>
+    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="app">
       <h1>StreamHub 🎬</h1>
+      <input 
+        type="text"
+        placeholder='Search Movies...'
+        value = {searchTerm}
+        onChange={(e) => {setSearchTerm(e.target.value)}}
+        className='search-bar'
+      />
       <div className="movie-list">
-        {movies.map((movie) => (
+        {
+        filteredMovies.map((movie) => (
           <div
             key={movie.id}
             className="movie-card"

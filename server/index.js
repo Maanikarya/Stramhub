@@ -19,7 +19,7 @@ app.get('/' , (req , res) => {
 });
 
 // Get all movies
-app.get('/movies' , (req , res) => {
+app.get('/api/movies' , (req , res) => {
     res.json(movies);
 });
 
