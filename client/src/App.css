@@ -1,0 +1,72 @@
+.app {
+  padding: 40px;
+  text-align: left;
+}
+
+.app h1 {
+  margin-bottom: 24px;
+  color: #e50914; /* Netflix red */
+}
+
+.movie-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.movie-card {
+  background-color: #222;
+  padding: 20px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  background-color: #333;
+  cursor: pointer;
+}
+
+.movie-card h3 {
+  margin-bottom: 8px;
+}
+
+.movie-card p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #222;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 400px;
+}
+
+.modal-genre {
+  color: #e50914;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.modal-content button {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
