@@ -3,10 +3,12 @@ import './App.css'
 
 function App() {
   const [searchTerm , setSearchTerm ] = useState('');
-  const [movies, setMovies] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedMovie, setSelectedMovie] = useState(null)
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [newTitle , setNewTitle] = useState("");
+  const [newGenre , setNewGenre] = useState("");
 
   useEffect(() => {
     fetch('http://localhost:5000/api/movies')
@@ -26,8 +28,36 @@ function App() {
   if (error) return <div className="app"><h1>StreamHub 🎬</h1><p>{error}</p></div>
 
   const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+    movie?.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleMovie = async(e) => {
+    e.preventDefault();
+
+    if( !newTitle.trim() || !newGenre.trim() ){
+      alert(' Title and genre are required ');
+      return;
+    }
+
+    const response = await fetch('http://localhost:5000/api/movies' , {
+      method : 'POST',
+      headers : { 'Content-Type' : 'application/json' },
+      body : JSON.stringify({ title : newTitle , genre : newGenre })
+    });
+
+    console.log(response);
+
+    if( !response.ok ){
+      const errorData = await response.json();
+      alert(errorData?.error || "Something Went Wrong ");
+      return; 
+    }
+
+    const addedMovie = await response.json();
+    setMovies([...movies , addedMovie]);
+    setNewGenre('');
+    setNewTitle(''); 
+  }
 
   return (
     <div className="app">
@@ -39,6 +69,26 @@ function App() {
         onChange={(e) => {setSearchTerm(e.target.value)}}
         className='search-bar'
       />
+
+      <form action="" onSubmit={handleMovie} className='add-form'>
+        <input 
+        type="text"
+        placeholder='Movie Title'
+        value = {newTitle}
+        onChange={(e) => setNewTitle(e.target.value)} 
+        />
+
+        <input 
+        type="text"
+        placeholder='Movie Genre'
+        value = {newGenre}
+        onChange={(e) => setNewGenre(e.target.value)} 
+        />
+
+        <button type='submit'> Add Movies </button>
+      </form>
+
+
       <div className="movie-list">
         {
         filteredMovies.map((movie) => (
