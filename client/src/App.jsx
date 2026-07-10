@@ -9,6 +9,10 @@ function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [newTitle , setNewTitle] = useState("");
   const [newGenre , setNewGenre] = useState("");
+  const [token , setToken ] = useState(null);
+  const [email , setEmail ] = useState('');
+  const [password , setPassword] = useState('');
+
 
   useEffect(() => {
     fetch('http://localhost:5000/api/movies')
@@ -24,12 +28,7 @@ function App() {
       })
   }, [])
 
-  if (loading) return <div className="app"><h1>StreamHub 🎬</h1><p>Loading movies...</p></div>
-  if (error) return <div className="app"><h1>StreamHub 🎬</h1><p>{error}</p></div>
 
-  const filteredMovies = movies.filter((movie) =>
-    movie?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleMovie = async(e) => {
     e.preventDefault();
@@ -41,11 +40,12 @@ function App() {
 
     const response = await fetch('http://localhost:5000/api/movies' , {
       method : 'POST',
-      headers : { 'Content-Type' : 'application/json' },
+      headers : { 
+        'Content-Type' : 'application/json' ,
+        'Authorization' : `Bearer ${token}`
+      },
       body : JSON.stringify({ title : newTitle , genre : newGenre })
     });
-
-    console.log(response);
 
     if( !response.ok ){
       const errorData = await response.json();
@@ -59,9 +59,54 @@ function App() {
     setNewTitle(''); 
   }
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    const response = await fetch('http://localhost:5000/api/login' , {
+      method : "POST",
+      headers : { 'Content-Type' : 'application/json'},
+      body : JSON.stringify({email , password})
+    });
+
+    if( !response.ok ){
+      alert("Login failed");
+      return;
+    }
+
+    const data = await response.json();
+    setToken(data.token);
+  }
+
+  if (loading) return <div className="app"><h1>StreamHub 🎬</h1><p>Loading movies...</p></div>
+  if (error) return <div className="app"><h1>StreamHub 🎬</h1><p>{error}</p></div>
+
+  const filteredMovies = movies.filter((movie) =>
+    movie?.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="app">
       <h1>StreamHub 🎬</h1>
+
+      {!token ? (
+        <form action=""  onSubmit={handleLogin} className='add-form'>
+            <input 
+            type="text"
+            placeholder='Email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            />
+            <input 
+            type="password"
+            placeholder='Password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="submit">Login</button>
+        </form>
+      ) : ( 
+         <p>✅ Logged in!</p>
+      )}
       <input 
         type="text"
         placeholder='Search Movies...'
