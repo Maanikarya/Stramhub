@@ -8,17 +8,25 @@ app.use( cors() );
 app.use( express.json() );  // middleware
 
 
-// Creating Middleware
-// function checkAuth(req, res, next){
-//     const token = req.headers['Aruthorization'];
-//     if( !token ){
-//         res.status(400).json({
-//             "success" : false ,
-//             "message" : "Aceess Denied! Token is not present."
-//         });
-//     }
-//     next(); 
-// }
+// Creating Middleware for Authentication
+function verifyToken( req , res , next )
+{
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if( !token ){
+        return res.status(401).json({error : "No token provided"});
+    }
+
+    jwt.verify( token , SECRET_KEY , (err , decoded) => {
+        if( err ){
+            return res.status(403).json({error : "Invalid or expire token"});
+        }
+
+        req.user = decoded; // decoded data (userId , email) will send in the req.user
+        next(); 
+    });
+}
 
 const movies = [
     { id : 1 , title : "Bhoot Bangla" , genre : "Comedy-Horor" },
@@ -28,12 +36,63 @@ const movies = [
     { id : 4 , title : "Dilwale Dulhaniya le Jayenge" , genre : "Romantic" },
 ];
 
+const bycrpt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const SECRET_KEY = 'my_super_secret_key_change_this_in_production';
+
+const users = [];
+
+app.post('/api/signup' , async(req , res) => {
+    const { email , password } = req.body; 
+
+    if( !email ||  !password ){
+        return res.status(400).send({error : "Email and password required!"});
+    }
+
+    const existingUser = users.find( u => u.email === email );
+
+    if ( existingUser ){
+        return res.status(400).send({error : "User already exist"});
+    }
+
+    const hashPassword = await bycrpt.hash(password , 10);
+
+    const newUser = { id : users.length+1 , email , password : hashPassword};
+    users.push(newUser);
+
+    res.status(201).send({message : "User Created Successfully"});
+
+});
+
+app.post('/api/login' , async(req , res) => {
+    const {email , password} = req.body; 
+
+    if( !email ||  !password ){
+        return res.status(400).send({error : "Email and password required!"});
+    }
+
+    const user = users.find( u => u.email === email );
+
+    if( !user ){
+        return res.status(400).send({error : "Invalid Credentials"});
+    }
+
+    const isPasswordValid = await bycrpt.compare( password , user.password );
+    if (!isPasswordValid  ){
+        return res.status(400).send({message : "Invalid Credentials"});
+    }
+
+    const token = jwt.sign({ userId : user.id , email : user.email } , SECRET_KEY , { expiresIn : '1h' });
+    res.status(201).send({message : "User is Successfully Login" , token , email : user.email});
+});
+
 app.get('/' , (req , res) => {
     res.send("Streaming API is runing!");
 });
 
 // Get all movies
-app.get('/api/movies' , (req , res) => {
+app.get('/api/movies'  ,  (req , res) => {
     res.json(movies);
 });
 
@@ -47,7 +106,7 @@ app.get('/api/movies/:id'  , (req , res) => {
     res.json(movie);
 });
 
-app.post('/api/movies' , (req , res) => {
+app.post('/api/movies' , verifyToken , (req , res) => {
     const {title , genre , desc } = req.body ; 
 
     if( !title || !genre ){
