@@ -29,11 +29,18 @@ function verifyToken( req , res , next )
 }
 
 const movies = [
-    { id : 1 , title : "Bhoot Bangla" , genre : "Comedy-Horor" },
-    { id : 2 , title : "Rab ne bna di Jodi" , genre : "Romantic" },
-    { id : 3 , title : "Welcome to the Jungle" , genre : "Comedy" },
-    { id : 4 , title : "Bodygaurd" , genre : "Romantic" },
-    { id : 4 , title : "Dilwale Dulhaniya le Jayenge" , genre : "Romantic" },
+    { id: 1, title: "Bhoot Bangla", genre: "Comedy-Horror" },
+    { id: 2, title: "Rab Ne Bana Di Jodi", genre: "Romance" },
+    { id: 3, title: "Welcome to the Jungle", genre: "Comedy" },
+    { id: 4, title: "Bodyguard", genre: "Romance" },
+    { id: 5, title: "Dilwale Dulhania Le Jayenge", genre: "Romance" },
+    { id: 6, title: "3 Idiots", genre: "Comedy-Drama" },
+    { id: 7, title: "Kabir Singh", genre: "Drama" },
+    { id: 8, title: "Dangal", genre: "Sports-Drama" },
+    { id: 9, title: "Pathaan", genre: "Action" },
+    { id: 10, title: "Stree", genre: "Comedy-Horror" },
+    { id: 11, title: "Drishyam", genre: "Thriller" },
+    { id: 12, title: "Zindagi Na Milegi Dobara", genre: "Adventure-Drama" }
 ];
 
 const bycrpt = require('bcryptjs');
@@ -122,6 +129,23 @@ app.post('/api/movies' , verifyToken , (req , res) => {
 
     movies.push(newMovie);
     res.status(201).json(newMovie);
+});
+
+app.get('/api/movies/:id/recommendations' , (req, res)=>{
+    const movie = movies.find( m => m.id === parseInt(req.params.id));
+
+    if( !movie ){
+        return res.status(404).json({ error : "Movie not found" });
+    }
+
+    const recommendations = movies
+                        .filter( m => m.id !== movie.id && m.genre === movie.genre)
+                        .slice(0,3);
+    
+    res.json({
+        basedOn : movie.title,
+        recommendations
+    });
 });
 
 app.listen(PORT , () => {

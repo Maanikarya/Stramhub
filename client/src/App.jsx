@@ -12,6 +12,7 @@ function App() {
   const [token , setToken ] = useState(null);
   const [email , setEmail ] = useState('');
   const [password , setPassword] = useState('');
+  const [recommendations , setRecommendations] = useState([]);
 
 
   useEffect(() => {
@@ -26,7 +27,13 @@ function App() {
         setLoading(false)
         console.log(err);
       })
-  }, [])
+  }, []);
+
+  const fetchrecommendations = async (movieId) => {
+    const response = await fetch(`http://localhost:5000/api/movies/${movieId}/recommendations`);
+    const data = await response.json();
+    setRecommendations(data.recommendations);
+  }
 
 
 
@@ -140,7 +147,10 @@ function App() {
           <div
             key={movie.id}
             className="movie-card"
-            onClick={() => setSelectedMovie(movie)}
+            onClick={() => {
+               setSelectedMovie(movie) 
+               fetchrecommendations(movie.id)
+            } }
           >
             <h3>{movie.title}</h3>
             <p>{movie.genre}</p>
@@ -154,6 +164,12 @@ function App() {
             <h2>{selectedMovie.title}</h2>
             <p className="modal-genre">{selectedMovie.genre}</p>
             <p>{selectedMovie.desc}</p>
+            {recommendations.length > 0 && (
+              <div className="recommendations">
+                <h4>You might also like:</h4>
+                {recommendations.map(r => <p key={r.id}>🎬 {r.title}</p>)}
+              </div>
+            )}
             <button onClick={() => setSelectedMovie(null)}>Close</button>
           </div>
         </div>
