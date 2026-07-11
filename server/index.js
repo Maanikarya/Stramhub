@@ -28,7 +28,7 @@ function verifyToken( req , res , next )
     });
 }
 
-const movies = [
+const movies = [ 
     { id: 1, title: "Bhoot Bangla", genre: "Comedy-Horror" },
     { id: 2, title: "Rab Ne Bana Di Jodi", genre: "Romance" },
     { id: 3, title: "Welcome to the Jungle", genre: "Comedy" },
